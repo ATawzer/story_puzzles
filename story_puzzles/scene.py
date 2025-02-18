@@ -1,55 +1,29 @@
+from mongoengine import Document, EmbeddedDocument, StringField, ListField, EmbeddedDocumentField
 from .entity import *
 
-class SceneTemplateTag:
-    def __init__(self, entity_type: EntityType, tag: str):
-        self.entity_type = entity_type
-        self.tag = tag
-
+class SceneTemplateTag(EmbeddedDocument):
+    entity_type = EnumField(EntityType, required=True)
+    tag = StringField(required=True)
+    
     def matches_entity(self, entity: BaseSceneEntity) -> bool:
-        """Check if the given entity matches this template tag's type."""
-        # Direct class checks
-        if isinstance(entity, Character) and self.entity_type == EntityType.CHARACTER:
-            return True
-        if isinstance(entity, Structure) and self.entity_type == EntityType.STRUCTURE:
-            return True
-        if isinstance(entity, Creature) and self.entity_type == EntityType.CREATURE:
-            return True
-
-        # For other types, check the entity's scene_tag
-        if isinstance(entity, BaseSceneEntity):
-            try:
-                entity_tag_parts = entity.scene_tag.strip("{}").split(":", 1)
-                if len(entity_tag_parts) == 2:
-                    type_str = entity_tag_parts[0].lower()
-                    if type_str == "object" and self.entity_type == EntityType.OBJECT_PROP:
-                        return True
-                    if type_str == "landmark" and self.entity_type == EntityType.LANDMARK:
-                        return True
-            except (AttributeError, ValueError):
-                pass
-        
-        return False
+        if entity.entity_type != self.entity_type:
+            return False
+        return entity.scene_tag.endswith(f":{self.tag}}}")
 
     def get_formatted_tag(self) -> str:
-        """Get the formatted template tag string."""
         return f"{{{self.entity_type.value}:{self.tag}}}"
 
+class Scene(Document):
+    name = StringField(required=True)
+    description = StringField(required=True)
+    template = StringField(required=True)
+    entities = ListField(EmbeddedDocumentField(BaseSceneEntity))
+    template_tags = ListField(EmbeddedDocumentField(SceneTemplateTag))
 
-class Scene:
-    name: str
-    description: str
-    template: str
-    entities: list[BaseSceneEntity]
-    template_tags: list[SceneTemplateTag]
-
-    def __init__(self, name: str, description: str, template: str):
-        self.name = name
-        self.description = description
-        self.template = template
-
-    def __post_init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._parse_template()
-        
+
     def _parse_template(self) -> list[SceneTemplateTag]:
         """Parse the template string and saves a list of SceneTemplateTag objects."""
         template_tags = []

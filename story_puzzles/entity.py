@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from mongoengine import Document, EmbeddedDocument, EnumField, StringField, ListField, EmbeddedDocumentField
 from enum import Enum
 # Enum for entity types
 class EntityType(Enum):
@@ -8,33 +8,24 @@ class EntityType(Enum):
     OBJECT_PROP = "object_prop"
     LANDMARK = "landmark"
 
-@dataclass
-class BaseSceneEntity:
-    scene_tag: str  # required parameter first
-    entity_type: EntityType
-    name: str = ""  # optional parameter with default after
-    description: str = ""
+class BaseSceneEntity(EmbeddedDocument):
+    meta = {'allow_inheritance': True}
+    scene_tag = StringField(required=True)
+    entity_type = EnumField(EntityType, required=True)
+    name = StringField(default="")
+    description = StringField(default="")
 
-@dataclass
 class Character(BaseSceneEntity):
-    entity_type: EntityType = EntityType.CHARACTER
+    entity_type = EnumField(EntityType, default=EntityType.CHARACTER)
 
-@dataclass
 class Structure(BaseSceneEntity):
-    name: str
-    description: str = ""
+    pass  # Inherits all fields from BaseSceneEntity
 
-@dataclass
 class Creature(BaseSceneEntity):
-    name: str
-    description: str = ""
+    pass
 
-@dataclass
 class ObjectProp(BaseSceneEntity):
-    name: str
-    description: str = ""
+    entity_type = EnumField(EntityType, default=EntityType.OBJECT_PROP)
 
-@dataclass
 class Landmark(BaseSceneEntity):
-    name: str
-    description: str = ""
+    entity_type = EnumField(EntityType, default=EntityType.LANDMARK)

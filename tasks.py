@@ -1,15 +1,16 @@
 from invoke import task
 from story_puzzles.scene import Scene
+from story_puzzles.db import init_db
 
 @task
 def test(c):
-    template = """{structure:Cottage 1} and {structure:Cottage 2} are nestled on a hillside. 
-    {character:Character 1} is tending with a(n) {object:Hoe} to a small garden of {labdmark:Field of Wheat}. 
-    A {creature:Cow} {verb:grazes} in a pasture nearby. 
-    {character:Character 2} is on the way to tend to the {creature:Cow} with a(n) {object:Milk Pale}. {character:Character 4},
-    the owner of {structure:Cottage 1} is {verb:arguing} with {character:Character 3}, 
-    the owner of {character:Cottage 2}. {character:Character 3} is holding a(n) {object:Axe}, 
-    by {structure:Cottage 1} a {landmark:Chopped Fallen Tree}.
+    init_db()
+    template = """
+    {character:Character 1} is holding a(n) {object:Axe} next to {character:Character 2}. There is a {landmark:Chopped Fallen Tree} behind them.
     """
-    scene = Scene(template)
-    print(scene)
+    scene = Scene(
+        name="Test Scene",
+        description="Sample scene for testing",
+        template=template
+    ).save()
+    print(scene.to_json())
