@@ -1,7 +1,15 @@
-from mongoengine import Document, EmbeddedDocument, StringField, ListField, EmbeddedDocumentField
-from .entity import *
+from mongoengine import Document, StringField, ListField, EmbeddedDocumentField, EnumField
+from ..entity_template import *
+from ..entity_template.types import EntityType
 
-class SceneTemplateTag(EmbeddedDocument):
+class BaseSceneEntity(Document):
+    """ This is a scene instanced entity, it maps back to a BaseEntity"""
+    meta = {'allow_inheritance': True}
+    scene_tag = StringField(required=True)
+    entity_type = EnumField(EntityType, required=True)
+    
+
+class SceneTemplateTag(Document):
     entity_type = EnumField(EntityType, required=True)
     tag = StringField(required=True)
     
@@ -74,7 +82,12 @@ class Scene(Document):
         
         self.template_tags = template_tags
 
-    def add_entity_by_tag(self, entity: BaseSceneEntity, template_tag: str):
+    def add_entity_by_tag(self, entity: BaseEntity, template_tag: str):
+        """
+        Connects an entity to a template tag in the scene. Once this is conntected, the entity is
+        no longer a BaseEntity, but a BaseSceneEntity. Only one entity can be connected to a template tag and 
+        an entity can only be in any scene once.
+        """
         if template_tag not in self.template:
             raise ValueError(f"Template tag {template_tag} not found in template {self.template}")
         
@@ -105,6 +118,12 @@ class Scene(Document):
             if entity.scene_tag == template_tag:
                 return entity
         raise ValueError(f"Template tag {template_tag} not found in scene {self.name}")
+    
+    def _is_entity_in_scene(self, entity: BaseSceneEntity) -> bool:
+        for scene_entity in self.entities:
+            if scene_entity.scene_tag == entity.scene_tag:
+                return True
+        return False
     
     def __str__(self):
         return f"Scene: {self.name}\nDescription: {self.description}\nTemplate: {self.template}\nEntities: {self.entities}"
