@@ -24,17 +24,17 @@ class SceneTemplate(Document):
         
         while True:
             # Find the next opening brace
-            start = self.template.find('{', current_pos)
+            start = self.template_description.find('{', current_pos)
             if start == -1:
                 break
             
             # Find the corresponding closing brace
-            end = self.template.find('}', start)
+            end = self.template_description.find('}', start)
             if end == -1:
                 break
             
             # Extract the tag content
-            tag_content = self.template[start + 1:end]
+            tag_content = self.template_description[start + 1:end]
             
             # Split the content into type and identifier
             try:

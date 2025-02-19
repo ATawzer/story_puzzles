@@ -80,3 +80,16 @@ def list_entities(c, entity_type=None):
 
     for entity in entities:
         print(f"- {entity.name}: {entity.description}")
+
+@task
+def game(c):
+    """Run the game"""
+    init_db()
+    c.run("streamlit run app.py")
+
+@task
+def editor(c):
+    """Run the editor"""
+    init_db()
+    c.run("streamlit run editor.py")
+

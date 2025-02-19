@@ -46,8 +46,6 @@ def main():
         # Display template information
         st.subheader("Template Details")
         st.write(f"Description: {selected_template.template_description}")
-        st.write("Template:")
-        st.info(selected_template.template)
         
         if st.button("Create Scene"):
             # Create a new scene instance
