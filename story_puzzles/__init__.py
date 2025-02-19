@@ -1,2 +1,2 @@
-from .entity_template import *
+from .entity import *
 from .scene import *
