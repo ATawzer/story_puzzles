@@ -52,13 +52,12 @@ def scene_template_selector():
 
 def scene_preview():
     """Render the scene preview"""
-    st.write("Scene Preview")
     scene_template = st.session_state.template
     scene = Scene(scene_template)
-
     st.session_state.scene = scene
-    scene_description = scene.get_filled_description()
-    st.markdown(f"**{scene_description}**")
+ 
+    st.write("Scene Preview")
+    st.markdown(f"**{scene.get_filled_description()}**")
 
 def render_left_panel():
     """Render the left panel containing the scene template and preview"""
