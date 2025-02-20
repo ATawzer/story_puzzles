@@ -1,0 +1,50 @@
+{
+  "scene_templates": [
+    {
+      "_id": "67b5250ecdeca62a079dede7",
+      "name": "Field Test",
+      "template_description": "{character:One} is holding a {object:Axe} next to {character:Two}. A {landmark:Tree} is behind them."
+    }
+  ],
+  "characters": [
+    {
+      "_id": "67b51c3db441cbf3af5ee319",
+      "_cls": "BaseEntityTemplate.CharacterTemplate",
+      "name": "Jane",
+      "description": "",
+      "entity_type": "character"
+    },
+    {
+      "_id": "67b5187f4d72fce3801a2362",
+      "_cls": "BaseEntityTemplate.CharacterTemplate",
+      "name": "John",
+      "description": "",
+      "entity_type": "character"
+    }
+  ],
+  "objects": [
+    {
+      "_id": "67b51c77151d8d96f39ced4c",
+      "_cls": "BaseEntityTemplate.ObjectPropTemplate",
+      "name": "Axe",
+      "description": "",
+      "entity_type": "object_prop"
+    },
+    {
+      "_id": "67b51c7e0a07938f180f18ff",
+      "_cls": "BaseEntityTemplate.ObjectPropTemplate",
+      "name": "Ring",
+      "description": "",
+      "entity_type": "object_prop"
+    }
+  ],
+  "landmarks": [
+    {
+      "_id": "67b51c49689518f287b61863",
+      "_cls": "BaseEntityTemplate.LandmarkTemplate",
+      "name": "Oak Tree",
+      "description": "",
+      "entity_type": "landmark"
+    }
+  ]
+}

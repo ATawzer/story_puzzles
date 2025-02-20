@@ -93,3 +93,82 @@ def editor(c):
     init_db()
     c.run("streamlit run editor.py")
 
+@task
+def export_db(c, output_file="db_backup.json"):
+    """Export the entire database to a JSON file
+    
+    Args:
+        output_file (str): Path to the output JSON file
+    """
+    init_db()
+    import json
+    from mongoengine.base import BaseDocument
+    from bson import ObjectId
+    from story_puzzles.scene.template import SceneTemplate
+    from story_puzzles.entity.template import CharacterTemplate, ObjectPropTemplate, LandmarkTemplate
+
+    class MongoEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, ObjectId):
+                return str(obj)
+            if isinstance(obj, BaseDocument):
+                return obj.to_mongo()
+            return json.JSONEncoder.default(self, obj)
+
+    data = {
+        'scene_templates': [template.to_mongo() for template in SceneTemplate.objects.all()],
+        'characters': [char.to_mongo() for char in CharacterTemplate.objects.all()],
+        'objects': [obj.to_mongo() for obj in ObjectPropTemplate.objects.all()],
+        'landmarks': [landmark.to_mongo() for landmark in LandmarkTemplate.objects.all()]
+    }
+
+    with open(output_file, 'w') as f:
+        json.dump(data, f, cls=MongoEncoder, indent=2)
+    
+    print(f"Database exported to {output_file}")
+
+@task
+def import_db(c, input_file="db_backup.json"):
+    """Import database from a JSON file
+    
+    Args:
+        input_file (str): Path to the input JSON file
+    """
+    init_db()
+    import json
+    from story_puzzles.scene.template import SceneTemplate
+    from story_puzzles.entity.template import CharacterTemplate, ObjectPropTemplate, LandmarkTemplate
+
+    # Clear existing data
+    SceneTemplate.objects.delete()
+    CharacterTemplate.objects.delete()
+    ObjectPropTemplate.objects.delete()
+    LandmarkTemplate.objects.delete()
+
+    with open(input_file, 'r') as f:
+        data = json.load(f)
+
+    # Helper function to clean MongoDB-specific fields
+    def clean_mongo_data(data):
+        if isinstance(data, dict):
+            return {k: v for k, v in data.items() if not k.startswith('_')}
+        return data
+
+    # Import scene templates
+    for template_data in data['scene_templates']:
+        SceneTemplate(**clean_mongo_data(template_data)).save()
+
+    # Import characters
+    for char_data in data['characters']:
+        CharacterTemplate(**clean_mongo_data(char_data)).save()
+
+    # Import objects
+    for obj_data in data['objects']:
+        ObjectPropTemplate(**clean_mongo_data(obj_data)).save()
+
+    # Import landmarks
+    for landmark_data in data['landmarks']:
+        LandmarkTemplate(**clean_mongo_data(landmark_data)).save()
+
+    print(f"Database imported from {input_file}")
+
