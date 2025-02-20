@@ -3,11 +3,13 @@ from .base import BaseEntityTemplate
 from .character import CharacterTemplate
 from .landmark import LandmarkTemplate
 from .object import ObjectPropTemplate
+from .creature import CreatureTemplate
 
 __all__ = [
     'EntityType',
     'BaseEntityTemplate',
     'CharacterTemplate',
     'ObjectPropTemplate',
-    'LandmarkTemplate'
+    'LandmarkTemplate',
+    'CreatureTemplate'
 ]

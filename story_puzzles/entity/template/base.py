@@ -1,4 +1,4 @@
-from mongoengine import Document, StringField, EnumField
+from mongoengine import Document, StringField, EnumField, ListField
 from .types import EntityType
 
 class BaseEntityTemplate(Document):
@@ -12,6 +12,7 @@ class BaseEntityTemplate(Document):
     name = StringField(required=True, unique=True)
     description = StringField(default="")
     entity_type = EnumField(EntityType, required=True)
+    possible_states = ListField(StringField(), default=list)
 
     def __str__(self):
         return f"{self.entity_type.value}: {self.name}"

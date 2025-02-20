@@ -5,7 +5,8 @@ from story_puzzles.entity.template import (
     CharacterTemplate, 
     ObjectPropTemplate, 
     LandmarkTemplate,
-    EntityType
+    EntityType,
+    CreatureTemplate
 )
 
 def init():
@@ -64,7 +65,7 @@ def main():
         st.header("Entities")
         entity_type = st.selectbox(
             "Filter by type",
-            ["All", "Character", "Object", "Landmark"]
+            ["All", "Character", "Object", "Landmark", "Creature"]
         )
         
         if entity_type == "Character" or entity_type == "All":
@@ -75,9 +76,17 @@ def main():
                         new_name = st.text_input("Name", entity.name)
                         new_desc = st.text_input("Description", entity.description)
                         
+                        # Add states management
+                        states_str = st.text_area(
+                            "Possible States (one per line)", 
+                            "\n".join(entity.possible_states)
+                        )
+                        
                         if st.form_submit_button("Update"):
                             entity.name = new_name
                             entity.description = new_desc
+                            # Parse states from text area
+                            entity.possible_states = [s.strip() for s in states_str.split('\n') if s.strip()]
                             entity.save()
                             st.success("Character updated!")
                         
@@ -94,9 +103,17 @@ def main():
                         new_name = st.text_input("Name", entity.name)
                         new_desc = st.text_input("Description", entity.description)
                         
+                        # Add states management
+                        states_str = st.text_area(
+                            "Possible States (one per line)", 
+                            "\n".join(entity.possible_states)
+                        )
+                        
                         if st.form_submit_button("Update"):
                             entity.name = new_name
                             entity.description = new_desc
+                            # Parse states from text area
+                            entity.possible_states = [s.strip() for s in states_str.split('\n') if s.strip()]
                             entity.save()
                             st.success("Object updated!")
                         
@@ -113,9 +130,17 @@ def main():
                         new_name = st.text_input("Name", entity.name)
                         new_desc = st.text_input("Description", entity.description)
                         
+                        # Add states management
+                        states_str = st.text_area(
+                            "Possible States (one per line)", 
+                            "\n".join(entity.possible_states)
+                        )
+                        
                         if st.form_submit_button("Update"):
                             entity.name = new_name
                             entity.description = new_desc
+                            # Parse states from text area
+                            entity.possible_states = [s.strip() for s in states_str.split('\n') if s.strip()]
                             entity.save()
                             st.success("Landmark updated!")
                         
@@ -123,25 +148,79 @@ def main():
                             entity.delete()
                             st.success("Landmark deleted!")
                             st.rerun()
+        
+        if entity_type == "Creature" or entity_type == "All":
+            st.subheader("Creatures")
+            for entity in CreatureTemplate.objects.all():
+                with st.expander(f"Creature: {entity.name}"):
+                    with st.form(f"creature_{entity.name}"):
+                        new_name = st.text_input("Name", entity.name)
+                        new_desc = st.text_input("Description", entity.description)
+                        
+                        # Add states management
+                        states_str = st.text_area(
+                            "Possible States (one per line)", 
+                            "\n".join(entity.possible_states)
+                        )
+                        
+                        if st.form_submit_button("Update"):
+                            entity.name = new_name
+                            entity.description = new_desc
+                            # Parse states from text area
+                            entity.possible_states = [s.strip() for s in states_str.split('\n') if s.strip()]
+                            entity.save()
+                            st.success("Creature updated!")
+                        
+                        if st.form_submit_button("Delete", type="secondary"):
+                            entity.delete()
+                            st.success("Creature deleted!")
+                            st.rerun()
 
     elif page == "Add Entity":
         st.header("Add New Entity")
         with st.form("new_entity"):
             entity_type = st.selectbox(
                 "Entity Type",
-                ["Character", "Object", "Landmark"]
+                ["Character", "Object", "Landmark", "Creature"]
             )
             name = st.text_input("Name")
             description = st.text_input("Description")
             
+            # Add states input
+            states_str = st.text_area(
+                "Possible States (one per line)", 
+                "default"  # Default initial state
+            )
+            
             if st.form_submit_button("Create Entity"):
                 if name:
+                    # Parse states from text area
+                    states = [s.strip() for s in states_str.split('\n') if s.strip()]
+                    
                     if entity_type == "Character":
-                        entity = CharacterTemplate(name=name, description=description).save()
+                        entity = CharacterTemplate(
+                            name=name, 
+                            description=description,
+                            possible_states=states
+                        ).save()
                     elif entity_type == "Object":
-                        entity = ObjectPropTemplate(name=name, description=description).save()
+                        entity = ObjectPropTemplate(
+                            name=name, 
+                            description=description,
+                            possible_states=states
+                        ).save()
                     elif entity_type == "Landmark":
-                        entity = LandmarkTemplate(name=name, description=description).save()
+                        entity = LandmarkTemplate(
+                            name=name, 
+                            description=description,
+                            possible_states=states
+                        ).save()
+                    elif entity_type == "Creature":
+                        entity = CreatureTemplate(
+                            name=name, 
+                            description=description,
+                            possible_states=states
+                        ).save()
                     st.success(f"Created {entity_type}: {name}")
                 else:
                     st.error("Please fill in the name field")

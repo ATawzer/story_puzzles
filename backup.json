@@ -1,49 +1,119 @@
 {
   "scene_templates": [
     {
-      "_id": "67b5250ecdeca62a079dede7",
+      "_id": "67b767fe7dbe07f350afef3b",
       "name": "Field Test",
-      "template_description": "{character:One} is holding a {object:Axe} next to {character:Two}. A {landmark:Tree} is behind them."
+      "template_description": "{character:One} is holding a {object_prop:Axe}.  A {landmark:Tree} is behind him a short distance. To the right of the Tree is a field, in which {creature:Cow} is grazing. {character:Two} is next to {character:One} attempting to communicate with them."
+    },
+    {
+      "_id": "67b78ee15d41f5d7e7a5d141",
+      "name": "Cottage on River",
+      "template_description": "A small {landmark:cottage} sits in a field next to a river. {character:One} is holding an {object:Bucket}. Next to the cottage is a {landmark:trough} being used by a {creature:Horse}."
     }
   ],
   "characters": [
     {
-      "_id": "67b51c3db441cbf3af5ee319",
+      "_id": "67b767ff7dbe07f350afef3c",
       "_cls": "BaseEntityTemplate.CharacterTemplate",
       "name": "Jane",
       "description": "",
+      "possible_states": [
+        "Neutral",
+        "Upset",
+        "Angry",
+        "Confused"
+      ],
       "entity_type": "character"
     },
     {
-      "_id": "67b5187f4d72fce3801a2362",
+      "_id": "67b767ff7dbe07f350afef3d",
       "_cls": "BaseEntityTemplate.CharacterTemplate",
       "name": "John",
       "description": "",
+      "possible_states": [
+        "Neutral",
+        "Upset",
+        "Angry",
+        "Confused"
+      ],
       "entity_type": "character"
+    }
+  ],
+  "creatures": [
+    {
+      "_id": "67b784e05d41f5d7e7a5d140",
+      "_cls": "BaseEntityTemplate.CreatureTemplate",
+      "name": "Cow",
+      "description": "Cool Looking Cow",
+      "possible_states": [
+        "Grazing",
+        "Aggressive",
+        "Dead"
+      ],
+      "entity_type": "creature"
+    },
+    {
+      "_id": "67b78f8b5d41f5d7e7a5d142",
+      "_cls": "BaseEntityTemplate.CreatureTemplate",
+      "name": "Horse",
+      "description": "A Cool looking Horse",
+      "possible_states": [
+        "Neutral",
+        "Graze",
+        "Dead",
+        "Bucking"
+      ],
+      "entity_type": "creature"
     }
   ],
   "objects": [
     {
-      "_id": "67b51c77151d8d96f39ced4c",
+      "_id": "67b767ff7dbe07f350afef3e",
       "_cls": "BaseEntityTemplate.ObjectPropTemplate",
       "name": "Axe",
-      "description": "",
+      "description": "A Sharp and sturdy Axe",
+      "possible_states": [
+        "Normal",
+        "Broken"
+      ],
       "entity_type": "object_prop"
     },
     {
-      "_id": "67b51c7e0a07938f180f18ff",
+      "_id": "67b767ff7dbe07f350afef3f",
       "_cls": "BaseEntityTemplate.ObjectPropTemplate",
       "name": "Ring",
-      "description": "",
+      "description": "A Shiny ring",
+      "possible_states": [
+        "Normal",
+        "Broken"
+      ],
       "entity_type": "object_prop"
     }
   ],
   "landmarks": [
     {
-      "_id": "67b51c49689518f287b61863",
+      "_id": "67b78fff5d41f5d7e7a5d143",
+      "_cls": "BaseEntityTemplate.LandmarkTemplate",
+      "name": "Cottage",
+      "description": "Cozy looking cottage",
+      "possible_states": [
+        "Normal",
+        "On Fire",
+        "Broken"
+      ],
+      "entity_type": "landmark"
+    },
+    {
+      "_id": "67b767ff7dbe07f350afef40",
       "_cls": "BaseEntityTemplate.LandmarkTemplate",
       "name": "Oak Tree",
       "description": "",
+      "possible_states": [
+        "Lush",
+        "Dead",
+        "On Fire",
+        "Chopped Down"
+      ],
       "entity_type": "landmark"
     }
   ]

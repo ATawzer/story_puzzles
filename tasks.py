@@ -1,7 +1,7 @@
 from invoke import task
 from story_puzzles.scene.template import SceneTemplate
 from story_puzzles.db import init_db
-from story_puzzles.entity.template import CharacterTemplate, ObjectPropTemplate, LandmarkTemplate
+from story_puzzles.entity.template import CharacterTemplate, ObjectPropTemplate, LandmarkTemplate, CreatureTemplate
 
 @task
 def init(c):
@@ -46,6 +46,13 @@ def add_landmark(c, name, description=""):
     print(f"Created landmark: {landmark.name}")
 
 @task
+def add_creature(c, name, description=""):
+    """Add a new creature to the database"""
+    init_db()
+    creature = CreatureTemplate(name=name, description=description).save()
+    print(f"Created creature: {creature.name}")
+
+@task
 def list_templates(c):
     """List all scene templates in the database"""
     init_db()
@@ -59,7 +66,9 @@ def list_templates(c):
 def list_entities(c, entity_type=None):
     """List all entities in the database, optionally filtered by type"""
     init_db()
-    if entity_type == 'character':
+    if entity_type == 'creature':
+        entities = CreatureTemplate.objects.all()
+    elif entity_type == 'character':
         entities = CharacterTemplate.objects.all()
     elif entity_type == 'object':
         entities = ObjectPropTemplate.objects.all()
@@ -69,6 +78,9 @@ def list_entities(c, entity_type=None):
         # List all entities
         print("\nCharacters:")
         for entity in CharacterTemplate.objects.all():
+            print(f"- {entity.name}: {entity.description}")
+        print("\nCreatures:")
+        for entity in CreatureTemplate.objects.all():
             print(f"- {entity.name}: {entity.description}")
         print("\nObjects:")
         for entity in ObjectPropTemplate.objects.all():
@@ -118,6 +130,7 @@ def export_db(c, output_file="db_backup.json"):
     data = {
         'scene_templates': [template.to_mongo() for template in SceneTemplate.objects.all()],
         'characters': [char.to_mongo() for char in CharacterTemplate.objects.all()],
+        'creatures': [creature.to_mongo() for creature in CreatureTemplate.objects.all()],
         'objects': [obj.to_mongo() for obj in ObjectPropTemplate.objects.all()],
         'landmarks': [landmark.to_mongo() for landmark in LandmarkTemplate.objects.all()]
     }
@@ -169,6 +182,10 @@ def import_db(c, input_file="db_backup.json"):
     # Import landmarks
     for landmark_data in data['landmarks']:
         LandmarkTemplate(**clean_mongo_data(landmark_data)).save()
+
+    # Import creatures
+    for creature_data in data.get('creatures', []):
+        CreatureTemplate(**clean_mongo_data(creature_data)).save()
 
     print(f"Database imported from {input_file}")
 
