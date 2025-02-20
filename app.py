@@ -64,11 +64,7 @@ def render_left_panel():
     """Render the left panel containing the scene template and preview"""
     with st.container():
         st.subheader("Scene Template")
-        
-        # Scene template selector
         scene_template_selector()
-        
-        # Scene preview
         scene_preview()
 
 def render_right_panel(template: SceneTemplate, scene: Scene):
