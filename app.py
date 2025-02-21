@@ -22,9 +22,8 @@ def init_app():
         st.session_state.scene = Scene(None)
     if 'template' not in st.session_state:
         st.session_state.template = None
-    if 'selections' not in st.session_state:
-        st.session_state.selections = {}
-        st.session_state.used_entities = {}
+    if 'selection_state' not in st.session_state:
+        st.session_state.selection_state = SelectionState({}, {}, None)
 
 def get_entity_options(entity_type: EntityType):
     """Get all entities of a specific type from the database"""
@@ -66,6 +65,43 @@ def render_left_panel():
         scene_template_selector()
         scene_preview()
 
+def entity_selector(tag: SceneTemplateTag):
+    """Render a single entity selector for a given tag"""
+    # Get available entities
+    all_entities = get_entity_options(tag.entity_type)
+    selection_state: SelectionState = st.session_state.selection_state
+    
+    # Filter out used entities
+    used_entities = selection_state.used_entities.get(tag.entity_type.value, set())
+    available_entities = [e for e in all_entities if e.name not in used_entities or 
+                       tag.tag_name in selection_state.selections and 
+                       selection_state.selections[tag.tag_name][1].name == e.name]
+    
+    # Create options dictionary
+    entity_options = {str(entity): entity for entity in available_entities}
+    
+    if entity_options:
+        # Get currently selected entity for this tag if it exists
+        current_selection = None
+        if tag.tag_name in selection_state.selections:
+            current_selection = str(selection_state.selections[tag.tag_name][1])
+        
+        st.selectbox(
+            f"Choose {tag.entity_type.value} for '{tag.tag_name}':",
+            options=list(entity_options.keys()),
+            key=f"select_{tag.tag_name}",
+            index=list(entity_options.keys()).index(current_selection) if current_selection else 0,
+            on_change=lambda: on_entity_change(tag, entity_options[st.session_state[f"select_{tag.tag_name}"]])
+        )
+    else:
+        st.error(f"No available {tag.entity_type.value} entities for '{tag.tag_name}'")
+
+def sentence_selector(sentence_num: int, tags: list[SceneTemplateTag]):
+    """Render entity selectors for a single sentence"""
+    st.markdown(f"**Sentence {sentence_num}**")
+    for tag in tags:
+        entity_selector(tag)
+
 def render_right_panel(template: SceneTemplate, scene: Scene):
     """Render the right panel containing entity selectors"""
     if not template:
@@ -77,81 +113,16 @@ def render_right_panel(template: SceneTemplate, scene: Scene):
     if 'selection_state' not in st.session_state:
         st.session_state.selection_state = SelectionState({}, {}, scene)
     
-    selection_state: SelectionState = st.session_state.selection_state
-    
     # Group tags by sentence
     tags_by_sentence = template.get_tags_by_sentence()
     
     # Process each sentence
     for sentence_num, tags in sorted(tags_by_sentence.items()):
-        st.markdown(f"**Sentence {sentence_num}**")
-        
-        for tag in tags:
-            # Get available entities
-            all_entities = get_entity_options(tag.entity_type)
-            
-            # Filter out entities used by other tags of the same type
-            used_entities = selection_state.used_entities.get(tag.entity_type.value, set())
-            available_entities = [e for e in all_entities if e.name not in used_entities or 
-                               tag.tag_name in selection_state.selections and 
-                               selection_state.selections[tag.tag_name][1].name == e.name]
-            
-            # Create options dictionary
-            entity_options = {str(entity): entity for entity in available_entities}
-            
-            if entity_options:
-                # Get currently selected entity for this tag if it exists
-                current_selection = None
-                if tag.tag_name in selection_state.selections:
-                    current_selection = str(selection_state.selections[tag.tag_name][1])
-                
-                selected_entity = st.selectbox(
-                    f"Choose {tag.entity_type.value} for '{tag.tag_name}':",
-                    options=list(entity_options.keys()),
-                    key=f"select_{tag.tag_name}",
-                    index=list(entity_options.keys()).index(current_selection) if current_selection else 0,
-                    on_change=lambda: on_entity_change(tag, entity_options[st.session_state[f"select_{tag.tag_name}"]])
-                )
-            else:
-                st.error(f"No available {tag.entity_type.value} entities for '{tag.tag_name}'")
+        sentence_selector(sentence_num, tags)
 
     if st.button("Reset Selections"):
-        selection_state.clear()
+        st.session_state.selection_state.clear()
         st.rerun()
-
-def on_template_change():
-    st.session_state.selections = {}
-    st.session_state.used_entities = {}
-    st.session_state.scene = Scene(st.session_state.template)
-
-def on_entity_change(tag: SceneTemplateTag, new_entity: BaseEntityTemplate):
-    """Handle entity selection changes"""
-    selection_state: SelectionState = st.session_state.selection_state
-    scene: Scene = st.session_state.scene
-    
-    # Remove any downstream selections that used the previously selected entity
-    if tag.tag_name in selection_state.selections:
-        old_tag, old_entity = selection_state.selections[tag.tag_name]
-        
-        # Find all downstream tags (higher sentence numbers)
-        downstream_tags = []
-        for other_tag_name, (other_tag, other_entity) in selection_state.selections.items():
-            if (other_tag.sentence_num > tag.sentence_num and 
-                other_entity.name == old_entity.name):
-                downstream_tags.append(other_tag_name)
-        
-        # Remove downstream selections
-        for tag_name in downstream_tags:
-            selection_state.remove_selection(tag_name)
-    
-    # Add new selection
-    selection_state.add_selection(tag, new_entity)
-    
-    # Update scene
-    scene.create_entity_by_tag(tag, new_entity)
-    
-    # Force streamlit to update the preview
-    st.rerun()
 
 def main():
     """Main function to run the app"""
@@ -164,19 +135,11 @@ def main():
 
     # Left panel (Scene Template)
     with left_col:
-        template = render_left_panel()
-        
-        if template and (not st.session_state.scene or st.session_state.scene.scene_template != template):
-            st.session_state.scene = Scene(template)
-            st.session_state.template = template
-            # Clear selections when template changes
-            st.session_state.selections = {}
-            st.session_state.used_entities = {}
+        render_left_panel()
 
     # Right panel (Entity Selection)
     with right_col:
-        if st.session_state.template:
-            render_right_panel(st.session_state.template, st.session_state.scene)
+        render_right_panel(st.session_state.template, st.session_state.scene)
 
 if __name__ == "__main__":
     main() 
