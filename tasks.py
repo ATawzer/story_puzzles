@@ -1,12 +1,16 @@
 from invoke import task
-from project_muse.template.scene import SceneTemplate
 from project_muse.db import init_db
-from project_muse.entity.template import CharacterTemplate, ObjectPropTemplate, LandmarkTemplate, CreatureTemplate
+from project_muse.template import SceneTemplate
 
 @task
 def init(c):
     """Initialize the database connection"""
     init_db()
+
+@task
+def test(c):
+    """Run tests"""
+    c.run("pytest tests --cov=./project_muse --cov-report=term-missing")
 
 @task
 def add_scene_template(c, name, template):

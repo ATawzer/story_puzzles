@@ -1,93 +1,133 @@
-from mongoengine import Document, StringField, ListField, EmbeddedDocumentField
-from .entity import *
+from mongoengine import Document, StringField, ListField, EmbeddedDocumentField, IntField, EmbeddedDocument
+from ..types import EntityType
 
 class SceneTemplateTag:
-
-    def __init__(self, entity_type: EntityType, tag_name: str, sentence_num: int):
+    """
+    Represents an unfilled tag in a scene template that the user will fill in with an entity.
+    """
+    def __init__(self, entity_type: EntityType, tag_name: str):
         self.entity_type = entity_type
         self.tag_name = tag_name
-        self.sentence_num = sentence_num
-    
+
     def __str__(self):
-        return f"{self.entity_type.value}:{self.tag_name} (sentence {self.sentence_num})"
+        return f"{self.entity_type.value}:{self.tag_name}"
     
     def __repr__(self):
         return self.__str__()
 
-    def is_valid_option(self, entity: 'BaseEntityTemplate') -> bool:
-        """Check if the given entity is valid for this tag."""
-        return entity.entity_type == self.entity_type
+class SceneTemplateSentence(EmbeddedDocument):
+    """
+    Represents a sentence in a scene template. 
+
+    Comprised of template tags that the user will fill in with an entity.
+    """
+    text = StringField(required=True)
+    order = IntField(required=True)
+    
+    def __init__(self, *args, **kwargs):
+        self._template_tags = None
+        super().__init__(*args, **kwargs)
+    
+    @property
+    def template_tags(self) -> list[SceneTemplateTag]:
+        """Parse and cache template tags in the sentence."""
+        if self._template_tags is None:
+            self._template_tags = self._parse_template_tags()
+        return self._template_tags
+
+    def _parse_template_tags(self) -> list[SceneTemplateTag]:
+        """Parse the template tags from the sentence string.
+        
+        tags are formatted as {entity_type:tag_name}
+        """
+        tags = []
+        current_pos = 0
+        
+        while True:
+            start = self.text.find('{', current_pos)
+            if start == -1:
+                break
+                
+            end = self.text.find('}', start)
+            if end == -1:
+                break
+                
+            tag_content = self.text[start + 1:end]
+            try:
+                entity_type_str, tag_name = tag_content.split(':')
+                try:
+                    entity_type = EntityType(entity_type_str)
+                    tags.append(SceneTemplateTag(entity_type, tag_name))
+                except ValueError:
+                    # Invalid entity type
+                    pass
+            except ValueError:
+                # Malformed tag
+                pass
+                
+            current_pos = end + 1
+            
+        return tags
+
+    def __str__(self):
+        return self.text
+    
+    def __repr__(self):
+        return f"{self.order}: {self.text}"
+    
+    def __iter__(self):
+        return iter(self.template_tags)
+    
+    def __getitem__(self, index: int):
+        return self.template_tags[index]
 
 class SceneTemplate(Document):
-    name = StringField(required=True)
-    template_description = StringField(required=True)
+    """
+    Represents a full scene template and correlates with a level.
 
+    Comprised of sentences that the user will fill in with an entity.
+    """
+    name = StringField(required=True)
+    sentences = ListField(EmbeddedDocumentField(SceneTemplateSentence))
+
+    # Public Methods
+    def add_sentence(self, text: str):
+        """Add a new sentence to the template."""
+        order = len(self.sentences)
+        sentence = SceneTemplateSentence(text=text, order=order)
+        self.sentences.append(sentence)
+        self.save()
+
+    def update_sentence(self, order: int, text: str):
+        """Update an existing sentence."""
+        if order >= len(self.sentences):
+            raise IndexError(f"Order {order} is out of bounds for scene template {self.name}")
+        self.sentences[order].text = text
+        self.save()
+
+    def get_sentences(self) -> list[SceneTemplateSentence]:
+        return self.sentences
+    
+    def get_full_template_description(self) -> str:
+        return "\n".join([str(sentence) for sentence in self.sentences])
+    
+    def get_sentence_by_order(self, order: int) -> SceneTemplateSentence:
+        return self.sentences[order]
+    
     def get_template_tags(self) -> list[SceneTemplateTag]:
-        """Parse the template string and saves a list of SceneTemplateTag objects."""
-        template_tags = []
-        
-        # Split into sentences
-        sentences = self.template_description.split('.')
-        
-        for sentence_num, sentence in enumerate(sentences, 1):
-            if not sentence.strip():
-                continue
-            
-            current_pos = 0
-            while True:
-                # Find the next opening brace
-                start = sentence.find('{', current_pos)
-                if start == -1:
-                    break
-                
-                # Find the corresponding closing brace
-                end = sentence.find('}', start)
-                if end == -1:
-                    break
-                
-                # Extract the tag content
-                tag_content = sentence[start + 1:end]
-                
-                # Split the content into type and identifier
-                try:
-                    entity_type_str, identifier = tag_content.split(':', 1)
-                    entity_type_str = entity_type_str.lower()
-                    
-                    # Convert string to EntityType enum
-                    if entity_type_str == 'character':
-                        entity_type = EntityType.CHARACTER
-                    elif entity_type_str == 'structure':
-                        entity_type = EntityType.STRUCTURE
-                    elif entity_type_str == 'creature':
-                        entity_type = EntityType.CREATURE
-                    elif entity_type_str == 'object':
-                        entity_type = EntityType.OBJECT_PROP
-                    elif entity_type_str == 'landmark':
-                        entity_type = EntityType.LANDMARK
-                    else:
-                        # Skip verb tags or unknown types
-                        current_pos = end + 1
-                        continue
-                    
-                    template_tags.append(SceneTemplateTag(
-                        entity_type, 
-                        identifier.strip(),
-                        sentence_num
-                    ))
-                    
-                except ValueError:
-                    # Skip malformed tags
-                    pass
-                
-                current_pos = end + 1
-        
-        return template_tags
+        """Get all template tags across all sentences."""
+        return [tag for sentence in self.sentences for tag in sentence.template_tags]
 
     def get_tags_by_sentence(self) -> dict[int, list[SceneTemplateTag]]:
-        """Group template tags by sentence number."""
-        tags_by_sentence = {}
-        for tag in self.get_template_tags():
-            if tag.sentence_num not in tags_by_sentence:
-                tags_by_sentence[tag.sentence_num] = []
-            tags_by_sentence[tag.sentence_num].append(tag)
-        return tags_by_sentence
+        """Group template tags by sentence order."""
+        return {sentence.order: sentence.template_tags for sentence in self.sentences}
+
+    # Internal Overrides
+    def __str__(self):
+        return self.name
+    
+    def __repr__(self):
+        return self.__str__()
+    
+    def __iter__(self):
+        return iter(self.sentences)

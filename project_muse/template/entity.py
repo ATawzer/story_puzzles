@@ -1,7 +1,7 @@
 from mongoengine import Document, StringField, EnumField, ListField
 from ..types import EntityType
 
-class BaseEntityTemplate(Document):
+class EntityTemplate(Document):
     """These are meant to persist across scenes"""
     meta = {
         'allow_inheritance': True,

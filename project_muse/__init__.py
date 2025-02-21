@@ -1,3 +1,1 @@
-from .entity import *
-from .scene import *
-from .ui import *
+from .template import *

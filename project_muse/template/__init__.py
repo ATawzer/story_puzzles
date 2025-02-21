@@ -1,5 +1,7 @@
-from ..types import EntityType
+from .scene import SceneTemplate, SceneTemplateSentence, SceneTemplateTag
 
 __all__ = [
-    'BaseEntityTemplate',
+    'SceneTemplate',
+    'SceneTemplateSentence',
+    'SceneTemplateTag',
 ]
