@@ -1,8 +1,8 @@
 import streamlit as st
-from story_puzzles.db import init_db
-from story_puzzles.scene.template import SceneTemplate, SceneTemplateTag
-from story_puzzles.scene import Scene
-from story_puzzles.entity.template import (
+from project_muse.db import init_db
+from project_muse.template.scene import SceneTemplate, SceneTemplateTag
+from project_muse.scene import Scene
+from project_muse.entity.template import (
     CharacterTemplate, 
     ObjectPropTemplate, 
     LandmarkTemplate,
@@ -10,8 +10,8 @@ from story_puzzles.entity.template import (
     EntityType,
     BaseEntityTemplate
 )
-from story_puzzles.ui.types import SelectionState
-from story_puzzles.ui.callbacks import on_entity_change, on_template_change
+from project_muse.ui.types import SelectionState
+from project_muse.ui.callbacks import on_entity_change, on_template_change
 
 def init_app():
     """Initialize the database connection"""

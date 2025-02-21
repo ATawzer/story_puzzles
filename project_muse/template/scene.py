@@ -1,5 +1,5 @@
 from mongoengine import Document, StringField, ListField, EmbeddedDocumentField
-from ..entity import *
+from .entity import *
 
 class SceneTemplateTag:
 

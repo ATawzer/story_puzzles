@@ -1,7 +1,7 @@
 from invoke import task
-from story_puzzles.scene.template import SceneTemplate
-from story_puzzles.db import init_db
-from story_puzzles.entity.template import CharacterTemplate, ObjectPropTemplate, LandmarkTemplate, CreatureTemplate
+from project_muse.template.scene import SceneTemplate
+from project_muse.db import init_db
+from project_muse.entity.template import CharacterTemplate, ObjectPropTemplate, LandmarkTemplate, CreatureTemplate
 
 @task
 def init(c):
@@ -116,8 +116,8 @@ def export_db(c, output_file="db_backup.json"):
     import json
     from mongoengine.base import BaseDocument
     from bson import ObjectId
-    from story_puzzles.scene.template import SceneTemplate
-    from story_puzzles.entity.template import CharacterTemplate, ObjectPropTemplate, LandmarkTemplate
+    from project_muse.template.scene import SceneTemplate
+    from project_muse.entity.template import CharacterTemplate, ObjectPropTemplate, LandmarkTemplate
 
     class MongoEncoder(json.JSONEncoder):
         def default(self, obj):
@@ -149,8 +149,8 @@ def import_db(c, input_file="db_backup.json"):
     """
     init_db()
     import json
-    from story_puzzles.scene.template import SceneTemplate
-    from story_puzzles.entity.template import CharacterTemplate, ObjectPropTemplate, LandmarkTemplate
+    from project_muse.template.scene import SceneTemplate
+    from project_muse.entity.template import CharacterTemplate, ObjectPropTemplate, LandmarkTemplate
 
     # Clear existing data
     SceneTemplate.objects.delete()

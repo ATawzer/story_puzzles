@@ -1,5 +1,5 @@
-from .template import SceneTemplate, SceneTemplateTag
-from ..entity.template import BaseEntityTemplate
+from ..template.scene import SceneTemplate, SceneTemplateTag
+from ..template.entity import BaseEntityTemplate
 
 class BaseSceneEntity:
     """ This is a scene instanced entity, it maps a template tag in a scene template

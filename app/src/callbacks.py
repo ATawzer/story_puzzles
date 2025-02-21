@@ -1,8 +1,8 @@
 import streamlit as st
-from .types import SelectionState
-from ..scene import Scene
-from ..scene.template import SceneTemplate, SceneTemplateTag
-from ..entity.template.base import BaseEntityTemplate
+from ..types import SelectionState
+from ...project_muse.scene import Scene
+from ...project_muse.template.scene import SceneTemplate, SceneTemplateTag
+from ...project_muse.template.entity import BaseEntityTemplate
 
 def on_entity_change(tag: SceneTemplateTag, new_entity: BaseEntityTemplate):
     """Handle entity selection changes"""

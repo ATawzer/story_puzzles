@@ -1,7 +1,7 @@
 import streamlit as st
-from story_puzzles.db import init_db
-from story_puzzles.scene.template import SceneTemplate
-from story_puzzles.entity.template import (
+from project_muse.db import init_db
+from project_muse.template.scene import SceneTemplate
+from project_muse.entity.template import (
     CharacterTemplate, 
     ObjectPropTemplate, 
     LandmarkTemplate,

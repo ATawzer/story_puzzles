@@ -1,5 +1,5 @@
 from mongoengine import Document, StringField, EnumField, ListField
-from .types import EntityType
+from ..types import EntityType
 
 class BaseEntityTemplate(Document):
     """These are meant to persist across scenes"""

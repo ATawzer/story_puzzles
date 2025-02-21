@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict, Set, Optional, Tuple
 from ..entity.template import BaseEntityTemplate
-from ..scene.template import SceneTemplateTag
+from ..template.scene import SceneTemplateTag
 from ..scene import Scene
 
 @dataclass
